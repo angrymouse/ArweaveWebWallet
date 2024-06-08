@@ -35,8 +35,8 @@ const maskAddress = async (address: string) => {
 	if(address.split('.').length==2){
 		if(address.split('.')[1]=='ar'){
 		let ansDomainDetails=await getANSDomain(address);
-		if(ansDomainDetails.address){
-			return ansDomainDetails.address
+		if(ansDomainDetails?.address){
+			return ansDomainDetails?.address
 		}else{
 			throw new Error("Invalid ANS domain")
 		}
