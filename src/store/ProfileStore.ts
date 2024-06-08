@@ -43,7 +43,7 @@ export async function getANS (address?: string) {
 }
 export async function getANSDomain (domain?: string) {
 	if (!domain || !domain.endsWith('.ar')) { return }
-	if ((ProfileStore.ansDomainLookupStatus[domain] ??= {}).loading) { return }
+	if ((ProfileStore.ansDomainLookupStatus[domain] ??= {}).loading) {return }
 	ProfileStore.ansDomainLookupStatus[domain].loading = true
 	await awaitEffect(() => InterfaceStore.windowVisible)
 	if(ProfileStore.ansDomainLookup[domain]?.address){
@@ -59,8 +59,10 @@ export async function getANSDomain (domain?: string) {
 
 		return ProfileStore.ansDomainLookup[domain]
 	} catch (e) {
-		ProfileStore.ansDomainLookupStatus[domain].loading = false
+		
 		console.error(e)
+	}finally{
+		ProfileStore.ansDomainLookupStatus[domain].loading = false
 	}
 }
 
