@@ -16,6 +16,8 @@ const ProfileStore = reactive({
 	verificationStatus: {} as { [id: string]: any },
 	ans: {} as { [id: string]: any },
 	ansStatus: {} as { [id: string]: any },
+	ansDomainLookup: {} as { [id: string]: any },
+	ansDomainLookupStatus: {} as { [id: string]: any },
 })
 
 export default ProfileStore
@@ -27,15 +29,37 @@ export async function getANS (address?: string) {
 	await awaitEffect(() => InterfaceStore.windowVisible)
 	try {
 		const ANSResponse=await fetch(`https://ans-resolver.herokuapp.com/resolve/${address}`).then(res=>res.json())
-		ProfileStore.ans[address] ??=ANSResponse?.domain
+		ProfileStore.ans[address] =ANSResponse
 		if (!ProfileStore.ans[address]) { 
-			ProfileStore.ans[address] ??= {}
+			ProfileStore.ans[address] = {}
 			
 		} 
 
 		return ProfileStore.ans[address]
 	} catch (e) {
 		ProfileStore.ansStatus[address].loading = false
+		console.error(e)
+	}
+}
+export async function getANSDomain (domain?: string) {
+	if (!domain || !domain.endsWith('.ar')) { return }
+	if ((ProfileStore.ansDomainLookupStatus[domain] ??= {}).loading) { return }
+	ProfileStore.ansDomainLookupStatus[domain].loading = true
+	await awaitEffect(() => InterfaceStore.windowVisible)
+	if(ProfileStore.ansDomainLookup[domain]?.address){
+		return ProfileStore.ansDomainLookup[domain]
+	}
+	try {
+		const ANSResponse=await fetch(`https://ans-resolver.herokuapp.com/find-user/${domain.split('.')[0]}`).then(res=>res.json())
+		
+		ProfileStore.ansDomainLookup[domain] =ANSResponse
+		if (!ProfileStore.ansDomainLookup[domain]) { 
+			ProfileStore.ansDomainLookup[domain] = {}
+		} 
+
+		return ProfileStore.ansDomainLookup[domain]
+	} catch (e) {
+		ProfileStore.ansDomainLookupStatus[domain].loading = false
 		console.error(e)
 	}
 }

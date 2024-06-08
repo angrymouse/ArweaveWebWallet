@@ -3,7 +3,7 @@
 		<div class="wallet-info" :key="wallet.key">
 			<div class="name">
 				<Icon class="logo" :icon="walletInfo.icon" />
-				<div>{{ arweaveId?.name ? (arweaveId?.name + (ansDomain? (' ('+ansDomain+') '):'') + ' | ' ) : (ansDomain ? ansDomain+' | ':'') }} {{ walletInfo.name }}</div>
+				<div>{{displayName}}</div>
 			</div>
 			<Address class="secondary-text" :address="wallet.key" />
 		</div>
@@ -13,9 +13,9 @@
 
 
 <script setup lang="ts">
-import Address from '@/components/atomic/Address.vue'
-import Icon from '@/components/atomic/Icon.vue'
-import ProfileStore, { getArweaveId, getANS } from '@/store/ProfileStore'
+import Address from '@/components/atomic/Address.vue';
+import Icon from '@/components/atomic/Icon.vue';
+import ProfileStore, { getArweaveId, getANS } from '@/store/ProfileStore';
 import { computed, watch } from 'vue'
 import { coldState } from '@/store/Cold'
 import { LOGO } from '@/store/Theme'
@@ -26,7 +26,21 @@ const arweaveId = computed(() => (ProfileStore.arweaveId as any)[props.wallet.ke
 const ansDomain = computed(() => (ProfileStore.ans as any)[props.wallet.key!])
 const walletInfo = computed(() => coldState.value && props.wallet.hasPrivateKey
 	? props.wallet.state.hot ? { icon: ICON.unlock, name: 'Hot Wallet' } : { icon: ICON.snow, name: 'Cold Wallet' }
-	: props.wallet.metadata || { icon: LOGO.arweave, name: 'Arweave wallet' })
+	: props.wallet.metadata || { icon: LOGO.arweave, name: 'Arweave wallet' });
+const displayName= computed(()=>{
+	if(arweaveId.value?.name&&ansDomain.value?.domain) {
+		return arweaveId.value.name + ' (' + ansDomain.value.domain + ') | ' + walletInfo.value.name;
+	}else if(arweaveId.value?.name){
+		return `${arweaveId.value.name} | ${walletInfo.value.name}`
+	}else if(ansDomain.value?.domain){
+
+		return `${ansDomain.value.domain} | ${walletInfo.value.name}`
+	} 
+	else {
+		return `${walletInfo.value.name}`
+	}
+})
+
 watch(() => props.wallet.key, () =>{ 
 	getArweaveId(props.wallet.key);
 	getANS(props.wallet.key)
